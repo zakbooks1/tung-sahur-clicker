@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Tung Sahur Clicker</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+        }
+
+        img {
+            width: 200px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+            img:active {
+                transform: scale(1.1);
+            }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #upgradeBtn {
+            background: #3b82f6;
+        }
+
+        #autoBtn {
+            background: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌙 Tung Sahur Clicker</h1>
+
+    <h2>Wake Points: <span id="points">0</span></h2>
+
+    <!-- CHARACTER IMAGE -->
+    <img id="character" src="yourimage.png" alt="Tung Guy">
+
+    <p>Click him to wake people up 🔔</p>
+
+    <br>
+
+    <button id="upgradeBtn">Upgrade Click (+1) | Cost: <span id="upgradeCost">10</span></button>
+    <br>
+    <button id="autoBtn">Buy Drummer 🥁 | Cost: <span id="autoCost">50</span></button>
+
+    <script>
+        let points = 0;
+        let clickPower = 1;
+        let upgradeCost = 10;
+        let autoCost = 50;
+        let autoClickers = 0;
+
+        const pointsText = document.getElementById("points");
+
+        // CLICK THE CHARACTER
+        document.getElementById("character").onclick = () => {
+        points += clickPower;
+
+        // little bounce effect
+        const img = document.getElementById("character");
+        img.style.transform = "scale(1.2)";
+        setTimeout(() => img.style.transform = "scale(1)", 100);
+
+        update();
+        };
+
+        document.getElementById("upgradeBtn").onclick = () => {
+        if (points >= upgradeCost) {
+        points -= upgradeCost;
+        clickPower++;
+        upgradeCost = Math.floor(upgradeCost * 1.5);
+        document.getElementById("upgradeCost").innerText = upgradeCost;
+        update();
+        }
+        };
+
+        document.getElementById("autoBtn").onclick = () => {
+        if (points >= autoCost) {
+        points -= autoCost;
+        autoClickers++;
+        autoCost = Math.floor(autoCost * 1.7);
+        document.getElementById("autoCost").innerText = autoCost;
+        update();
+        }
+        };
+
+        function update() {
+        pointsText.innerText = points;
+        }
+
+        // AUTO CLICK
+        setInterval(() => {
+        points += autoClickers;
+        update();
+        }, 1000);
+
+    </script>
+
+</body>
+</html>
