@@ -1,225 +1,267 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Tung Sahur Clicker</title>
+    <title>Tung Sahur Clicker - Galaxy Edition</title>
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --panel-bg: rgba(255, 255, 255, 0.1);
+            --gold: #fbbf24;
+        }
 
-<style>
-body {
-    margin: 0;
-    background: linear-gradient(#0f172a, #020617);
-    color: white;
-    text-align: center;
-    font-family: Arial;
-    overflow-x: hidden;
-}
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #1e1b4b, #020617);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-h1 { margin-top: 10px; }
+        /* LEFT SIDE - CLICKER AREA */
+        .clicker-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
 
-#character {
-    width: 220px;
-    cursor: pointer;
-    animation: float 2s infinite ease-in-out;
-    transition: transform 0.1s;
-}
+        #character {
+            width: 280px;
+            cursor: pointer;
+            filter: drop-shadow(0 0 20px rgba(129, 140, 248, 0.5));
+            transition: transform 0.05s;
+            z-index: 10;
+        }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
-}
+        .stats-top {
+            text-align: center;
+            position: absolute;
+            top: 20px;
+            width: 100%;
+        }
 
-button {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-}
+        .points-main { font-size: 32px; font-weight: bold; margin-bottom: 0; }
+        .bps-sub { color: #94a3b8; margin-top: 5px; }
 
-.shop {
-    margin-top: 10px;
-}
+        /* RIGHT SIDE - SHOP SIDEBAR */
+        .sidebar {
+            width: 380px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
 
-.floating {
-    position: absolute;
-    font-weight: bold;
-    pointer-events: none;
-    animation: floatUp 1s forwards;
-}
+        .shop-header {
+            text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
 
-@keyframes floatUp {
-    from { opacity: 1; transform: translateY(0px); }
-    to { opacity: 0; transform: translateY(-60px); }
-}
+        .shop-item {
+            background: rgba(0,0,0,0.4);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
 
-.shake {
-    animation: shake 0.2s;
-}
+        .shop-item:hover { border-color: var(--gold); transform: scale(1.02); }
+        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
 
-@keyframes shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(5px,0); }
-    50% { transform: translate(-5px,0); }
-    75% { transform: translate(5px,0); }
-    100% { transform: translate(0,0); }
-}
-</style>
+        .item-info { flex: 1; margin-left: 15px; }
+        .item-name { font-weight: bold; font-size: 14px; }
+        .item-cost { color: var(--gold); font-size: 12px; }
+        .item-count { font-size: 24px; font-weight: bold; opacity: 0.5; }
+
+        /* ASCENSION PANEL */
+        .ascend-panel {
+            margin-top: auto;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .ascend-btn {
+            background: linear-gradient(45deg, #7c3aed, #db2777);
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatText 1s ease-out forwards;
+        }
+
+        @keyframes floatText {
+            to { transform: translateY(-100px); opacity: 0; }
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>🌙 Tung Sahur Clicker</h1>
+    <div class="clicker-area">
+        <div class="stats-top">
+            <div class="points-main" id="points">0</div>
+            <div class="bps-sub"><span id="bps">0</span> Brainrot Per Second</div>
+        </div>
+        
+        <img id="character" src="yourimage.png" alt="Tung Guy">
+        
+        <div style="margin-top: 20px; color: #94a3b8;">Click Power: +<span id="clickPowerText">1</span></div>
+    </div>
 
-<h2>Points: <span id="points">0</span></h2>
-<p>Combo: <span id="combo">0</span></p>
-<p>CPS: <span id="cps">0</span></p>
+    <div class="sidebar">
+        <div class="shop-header">
+            <h3>UPGRADES</h3>
+        </div>
 
-<img id="character" src="yourimage.png">
+        <div id="shop-container">
+            </div>
 
-<div class="shop">
-    <button onclick="buyUpgrade()">Upgrade Click | Cost: <span id="upCost">10</span></button>
-    <button onclick="buyAuto()">Buy Drummer 🥁 | Cost: <span id="autoCost">50</span></button>
-</div>
+        <div class="ascend-panel">
+            <div>Ascension Multiplier: <span id="ascMult">1.0</span>x</div>
+            <button class="ascend-btn" onclick="ascend()">Ascend<br><small id="ascGain">Next: +0.0x</small></button>
+        </div>
+    </div>
 
-<audio id="music" loop>
-    <source src="sahur.mp3">
-</audio>
+    <audio id="bgMusic" loop><source src="sahur.mp3"></audio>
 
 <script>
-// GAME DATA
-let points=0, clickPower=1, upCost=10, autoCost=50, auto=0;
-let combo=0, lastClick=0, cps=0, clicks=0;
+let points = 0;
+let totalPointsEver = 0;
+let prestigeMultiplier = 1.0;
+let clickBase = 1;
 
-// SOUND POOL
-const sounds=[];
-for(let i=0;i<5;i++) sounds.push(new Audio("click.mp3"));
-let sIndex=0;
+const items = [
+    { id: 0, name: "The Clicker", cost: 10, power: 1, type: "click", count: 0, icon: "🖱️" },
+    { id: 1, name: "Tung Sahur Earth", cost: 100, power: 5, type: "auto", count: 0, icon: "🌍" },
+    { id: 2, name: "Tung Sahur Sun", cost: 1000, power: 50, type: "auto", count: 0, icon: "☀️" },
+    { id: 3, name: "Tung Sahur Galaxy", cost: 10000, power: 500, type: "auto", count: 0, icon: "🌌" }
+];
 
-// LOAD
-let save=JSON.parse(localStorage.getItem("sahurSave"));
-if(save){
-    points=save.points||0;
-    clickPower=save.clickPower||1;
-    upCost=save.upCost||10;
-    autoCost=save.autoCost||50;
-    auto=save.auto||0;
+// Sound Pool
+const sounds = Array(5).fill(0).map(() => new Audio("click.mp3"));
+let sIdx = 0;
+
+function updateUI() {
+    let bps = items.filter(i => i.type === "auto").reduce((sum, i) => sum + (i.count * i.power), 0);
+    let clickPower = (items.filter(i => i.type === "click").reduce((sum, i) => sum + (i.count * i.power), clickBase)) * prestigeMultiplier;
+    
+    document.getElementById("points").innerText = Math.floor(points).toLocaleString();
+    document.getElementById("bps").innerText = (bps * prestigeMultiplier).toLocaleString();
+    document.getElementById("clickPowerText").innerText = Math.floor(clickPower).toLocaleString();
+    document.getElementById("ascMult").innerText = prestigeMultiplier.toFixed(1);
+    
+    // Calculate potential prestige gain
+    let potential = Math.max(0, (Math.floor(Math.sqrt(totalPointsEver / 10000)) * 0.1));
+    document.getElementById("ascGain").innerText = "Next: +" + potential.toFixed(1) + "x";
+
+    renderShop();
 }
 
-// MUSIC START
-let musicStarted=false;
-function startMusic(){
-    if(!musicStarted){
-        document.getElementById("music").play();
-        musicStarted=true;
+function renderShop() {
+    const container = document.getElementById("shop-container");
+    container.innerHTML = "";
+    items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = `shop-item ${points < item.cost ? 'disabled' : ''}`;
+        div.onclick = () => buyItem(item.id);
+        div.innerHTML = `
+            <div style="font-size: 30px">${item.icon}</div>
+            <div class="item-info">
+                <div class="item-name">${item.name}</div>
+                <div class="item-cost">💰 ${Math.floor(item.cost).toLocaleString()}</div>
+            </div>
+            <div class="item-count">${item.count}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function buyItem(id) {
+    const item = items[id];
+    if (points >= item.cost) {
+        points -= item.cost;
+        item.count++;
+        item.cost *= 1.5;
+        updateUI();
     }
 }
 
-// CLICK
-document.getElementById("character").onclick=(e)=>{
-    startMusic();
+document.getElementById("character").onclick = (e) => {
+    // Play Sound
+    sounds[sIdx].currentTime = 0;
+    sounds[sIdx].play();
+    sIdx = (sIdx + 1) % sounds.length;
 
-    // SOUND
-    sounds[sIndex].currentTime=0;
-    sounds[sIndex].play();
-    sIndex=(sIndex+1)%sounds.length;
+    let clickPower = (items.filter(i => i.type === "click").reduce((sum, i) => sum + (i.count * i.power), clickBase)) * prestigeMultiplier;
+    points += clickPower;
+    totalPointsEver += clickPower;
 
-    // COMBO
-    let now=Date.now();
-    if(now-lastClick<500) combo++;
-    else combo=0;
-    lastClick=now;
+    // Animation
+    const img = document.getElementById("character");
+    img.style.transform = "scale(0.95)";
+    setTimeout(() => img.style.transform = "scale(1)", 50);
 
-    let gain=clickPower+combo;
+    // Floating text
+    const txt = document.createElement("div");
+    txt.className = "floating-text";
+    txt.innerText = "+" + Math.floor(clickPower);
+    txt.style.left = e.pageX + "px";
+    txt.style.top = e.pageY + "px";
+    document.body.appendChild(txt);
+    setTimeout(() => txt.remove(), 1000);
 
-    // CRIT
-    if(Math.random()<0.1){
-        gain*=3;
-        shake();
-    }
-
-    points+=gain;
-    clicks++;
-
-    floatText("+"+gain,e.pageX,e.pageY);
-
-    let img=document.getElementById("character");
-    img.style.transform="scale(1.2)";
-    setTimeout(()=>img.style.transform="scale(1)",100);
-
-    update();
+    updateUI();
 };
 
-// FLOAT TEXT
-function floatText(txt,x,y){
-    let el=document.createElement("div");
-    el.className="floating";
-    el.innerText=txt;
-    el.style.left=x+"px";
-    el.style.top=y+"px";
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(),1000);
-}
-
-// SHAKE
-function shake(){
-    document.body.classList.add("shake");
-    setTimeout(()=>document.body.classList.remove("shake"),200);
-}
-
-// SHOP
-function buyUpgrade(){
-    if(points>=upCost){
-        points-=upCost;
-        clickPower++;
-        upCost=Math.floor(upCost*1.5);
+function ascend() {
+    let gain = Math.floor(Math.sqrt(totalPointsEver / 10000)) * 0.1;
+    if (gain <= 0) return alert("Earn more Brainrot to ascend!");
+    
+    if (confirm("Reset progress for " + gain.toFixed(1) + "x multiplier boost?")) {
+        prestigeMultiplier += gain;
+        points = 0;
+        totalPointsEver = 0;
+        items.forEach(i => {
+            i.count = 0;
+            i.cost = i.id === 0 ? 10 : i.id === 1 ? 100 : i.id === 2 ? 1000 : 10000;
+        });
+        updateUI();
     }
 }
 
-function buyAuto(){
-    if(points>=autoCost){
-        points-=autoCost;
-        auto++;
-        autoCost=Math.floor(autoCost*1.7);
-    }
-}
+// Auto-click loop
+setInterval(() => {
+    let bps = items.filter(i => i.type === "auto").reduce((sum, i) => sum + (i.count * i.power), 0);
+    points += (bps * prestigeMultiplier) / 10;
+    totalPointsEver += (bps * prestigeMultiplier) / 10;
+    updateUI();
+}, 100);
 
-// AUTO
-setInterval(()=>{
-    points+=auto;
-    update();
-},1000);
-
-// CPS TRACK
-setInterval(()=>{
-    cps=clicks;
-    clicks=0;
-},1000);
-
-// SAVE
-setInterval(()=>{
-    localStorage.setItem("sahurSave",JSON.stringify({
-        points,clickPower,upCost,autoCost,auto
-    }));
-},3000);
-
-// DAY/NIGHT
-setInterval(()=>{
-    document.body.style.background=
-    document.body.style.background.includes("0f172a")
-    ? "black"
-    : "linear-gradient(#0f172a,#020617)";
-},15000);
-
-// UPDATE UI
-function update(){
-    document.getElementById("points").innerText=Math.floor(points);
-    document.getElementById("combo").innerText=combo;
-    document.getElementById("cps").innerText=cps;
-    document.getElementById("upCost").innerText=upCost;
-    document.getElementById("autoCost").innerText=autoCost;
-}
-update();
+updateUI();
 </script>
-
 </body>
 </html>
