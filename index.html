@@ -1,192 +1,223 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tung Sahur Clicker</title>
-    <style>
-        body {
-            background: linear-gradient(#0f172a, #020617);
-            color: white;
-            text-align: center;
-            font-family: Arial;
-        }
+<title>Tung Sahur Clicker</title>
 
-        h1 {
-            margin-top: 20px;
-        }
+<style>
+body {
+    margin: 0;
+    background: linear-gradient(#0f172a, #020617);
+    color: white;
+    text-align: center;
+    font-family: Arial;
+    overflow-x: hidden;
+}
 
-        #character {
-            width: 220px;
-            cursor: pointer;
-            transition: transform 0.1s;
-            animation: float 2s infinite ease-in-out;
-        }
+h1 { margin-top: 10px; }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
+#character {
+    width: 220px;
+    cursor: pointer;
+    animation: float 2s infinite ease-in-out;
+    transition: transform 0.1s;
+}
 
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            margin: 10px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-        }
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
 
-        #upgradeBtn { background: #3b82f6; }
-        #autoBtn { background: #f59e0b; }
+button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
 
-        .floatingText {
-            position: absolute;
-            color: #22c55e;
-            font-weight: bold;
-            pointer-events: none;
-            animation: floatUp 1s forwards;
-        }
+.shop {
+    margin-top: 10px;
+}
 
-        @keyframes floatUp {
-            from { opacity: 1; transform: translateY(0px); }
-            to { opacity: 0; transform: translateY(-50px); }
-        }
-    </style>
+.floating {
+    position: absolute;
+    font-weight: bold;
+    pointer-events: none;
+    animation: floatUp 1s forwards;
+}
+
+@keyframes floatUp {
+    from { opacity: 1; transform: translateY(0px); }
+    to { opacity: 0; transform: translateY(-60px); }
+}
+
+.shake {
+    animation: shake 0.2s;
+}
+
+@keyframes shake {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(5px,0); }
+    50% { transform: translate(-5px,0); }
+    75% { transform: translate(5px,0); }
+    100% { transform: translate(0,0); }
+}
+</style>
 </head>
+
 <body>
 
 <h1>🌙 Tung Sahur Clicker</h1>
 
-<h2>Wake Points: <span id="points">0</span></h2>
+<h2>Points: <span id="points">0</span></h2>
+<p>Combo: <span id="combo">0</span></p>
+<p>CPS: <span id="cps">0</span></p>
 
 <img id="character" src="yourimage.png">
 
-<p>Click him to wake people up 🔔</p>
+<div class="shop">
+    <button onclick="buyUpgrade()">Upgrade Click | Cost: <span id="upCost">10</span></button>
+    <button onclick="buyAuto()">Buy Drummer 🥁 | Cost: <span id="autoCost">50</span></button>
+</div>
 
-<button id="upgradeBtn">Upgrade Click (+1) | Cost: <span id="upgradeCost">10</span></button>
-<br>
-<button id="autoBtn">Buy Drummer 🥁 | Cost: <span id="autoCost">50</span></button>
-
-<!-- MUSIC -->
-<audio id="bgMusic" loop>
-    <source src="sahur.mp3" type="audio/mpeg">
-</audio>
-
-<!-- CLICK SOUND -->
-<audio id="clickSound">
-    <source src="click.mp3" type="audio/mpeg">
+<audio id="music" loop>
+    <source src="sahur.mp3">
 </audio>
 
 <script>
-let points = 0;
-let clickPower = 1;
-let upgradeCost = 10;
-let autoCost = 50;
-let autoClickers = 0;
+// GAME DATA
+let points=0, clickPower=1, upCost=10, autoCost=50, auto=0;
+let combo=0, lastClick=0, cps=0, clicks=0;
 
-let musicStarted = false;
+// SOUND POOL
+const sounds=[];
+for(let i=0;i<5;i++) sounds.push(new Audio("click.mp3"));
+let sIndex=0;
 
-const pointsText = document.getElementById("points");
-
-// LOAD SAVE
-function loadGame() {
-    let save = JSON.parse(localStorage.getItem("sahurSave"));
-    if (save) {
-        points = save.points || 0;
-        clickPower = save.clickPower || 1;
-        upgradeCost = save.upgradeCost || 10;
-        autoCost = save.autoCost || 50;
-        autoClickers = save.autoClickers || 0;
-    }
-}
-loadGame();
-
-// SAVE GAME
-function saveGame() {
-    localStorage.setItem("sahurSave", JSON.stringify({
-        points,
-        clickPower,
-        upgradeCost,
-        autoCost,
-        autoClickers
-    }));
+// LOAD
+let save=JSON.parse(localStorage.getItem("sahurSave"));
+if(save){
+    points=save.points||0;
+    clickPower=save.clickPower||1;
+    upCost=save.upCost||10;
+    autoCost=save.autoCost||50;
+    auto=save.auto||0;
 }
 
-// START MUSIC
-function startMusic() {
-    if (!musicStarted) {
-        document.getElementById("bgMusic").play();
-        musicStarted = true;
+// MUSIC START
+let musicStarted=false;
+function startMusic(){
+    if(!musicStarted){
+        document.getElementById("music").play();
+        musicStarted=true;
     }
 }
 
-// CLICK CHARACTER
-document.getElementById("character").onclick = (e) => {
+// CLICK
+document.getElementById("character").onclick=(e)=>{
     startMusic();
 
-    // click sound
-    let sound = document.getElementById("clickSound");
-    sound.currentTime = 0;
-    sound.play();
+    // SOUND
+    sounds[sIndex].currentTime=0;
+    sounds[sIndex].play();
+    sIndex=(sIndex+1)%sounds.length;
 
-    points += clickPower;
+    // COMBO
+    let now=Date.now();
+    if(now-lastClick<500) combo++;
+    else combo=0;
+    lastClick=now;
 
-    // bounce
-    let img = document.getElementById("character");
-    img.style.transform = "scale(1.2)";
-    setTimeout(() => img.style.transform = "scale(1)", 100);
+    let gain=clickPower+combo;
 
-    // floating text
-    let text = document.createElement("div");
-    text.className = "floatingText";
-    text.innerText = "+" + clickPower;
-    text.style.left = e.pageX + "px";
-    text.style.top = e.pageY + "px";
-    document.body.appendChild(text);
+    // CRIT
+    if(Math.random()<0.1){
+        gain*=3;
+        shake();
+    }
 
-    setTimeout(() => text.remove(), 1000);
+    points+=gain;
+    clicks++;
+
+    floatText("+"+gain,e.pageX,e.pageY);
+
+    let img=document.getElementById("character");
+    img.style.transform="scale(1.2)";
+    setTimeout(()=>img.style.transform="scale(1)",100);
 
     update();
 };
 
-// UPGRADE
-document.getElementById("upgradeBtn").onclick = () => {
-    if (points >= upgradeCost) {
-        points -= upgradeCost;
-        clickPower++;
-        upgradeCost = Math.floor(upgradeCost * 1.5);
-        update();
-    }
-};
-
-// AUTO CLICKER
-document.getElementById("autoBtn").onclick = () => {
-    if (points >= autoCost) {
-        points -= autoCost;
-        autoClickers++;
-        autoCost = Math.floor(autoCost * 1.7);
-        update();
-    }
-};
-
-function update() {
-    pointsText.innerText = points;
-    document.getElementById("upgradeCost").innerText = upgradeCost;
-    document.getElementById("autoCost").innerText = autoCost;
+// FLOAT TEXT
+function floatText(txt,x,y){
+    let el=document.createElement("div");
+    el.className="floating";
+    el.innerText=txt;
+    el.style.left=x+"px";
+    el.style.top=y+"px";
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1000);
 }
 
-// AUTO CLICK LOOP
-setInterval(() => {
-    points += autoClickers;
+// SHAKE
+function shake(){
+    document.body.classList.add("shake");
+    setTimeout(()=>document.body.classList.remove("shake"),200);
+}
+
+// SHOP
+function buyUpgrade(){
+    if(points>=upCost){
+        points-=upCost;
+        clickPower++;
+        upCost=Math.floor(upCost*1.5);
+    }
+}
+
+function buyAuto(){
+    if(points>=autoCost){
+        points-=autoCost;
+        auto++;
+        autoCost=Math.floor(autoCost*1.7);
+    }
+}
+
+// AUTO
+setInterval(()=>{
+    points+=auto;
     update();
-}, 1000);
+},1000);
 
-// AUTO SAVE
-setInterval(() => {
-    saveGame();
-}, 3000);
+// CPS TRACK
+setInterval(()=>{
+    cps=clicks;
+    clicks=0;
+},1000);
 
-// UPDATE ON LOAD
+// SAVE
+setInterval(()=>{
+    localStorage.setItem("sahurSave",JSON.stringify({
+        points,clickPower,upCost,autoCost,auto
+    }));
+},3000);
+
+// DAY/NIGHT
+setInterval(()=>{
+    document.body.style.background=
+    document.body.style.background.includes("0f172a")
+    ? "black"
+    : "linear-gradient(#0f172a,#020617)";
+},15000);
+
+// UPDATE UI
+function update(){
+    document.getElementById("points").innerText=Math.floor(points);
+    document.getElementById("combo").innerText=combo;
+    document.getElementById("cps").innerText=cps;
+    document.getElementById("upCost").innerText=upCost;
+    document.getElementById("autoCost").innerText=autoCost;
+}
 update();
 </script>
 
