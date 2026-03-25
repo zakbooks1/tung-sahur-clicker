@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tung Sahur Clicker - Galaxy Edition</title>
-
-       <style>
+    <title>Tung Sahur Clicker</title>
+    <style>
         :root {
-            --bg-deep: #020617;
-            --panel-bg: rgba(255, 255, 255, 0.1);
-            --gold: #fbbf24;
+            --bg: radial-gradient(circle, #7f1d1d 0%, #450a0a 100%);
+            --panel: #fdf6e3; /* Cream shop background */
+            --gold: #fde047;
+            --blue: #3b82f6;
         }
 
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #1e1b4b, #020617);
+            background: var(--bg);
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Arial Rounded MT Bold', sans-serif;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            user-select: none;
         }
 
-        /* LEFT SIDE - CLICKER AREA */
-        .clicker-area {
+        /* LEFT SIDE - THE CHARACTER AREA */
+        .game-side {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -30,240 +31,235 @@
             position: relative;
         }
 
-        #character {
-            width: 280px;
-            cursor: pointer;
-            filter: drop-shadow(0 0 20px rgba(129, 140, 248, 0.5));
-            transition: transform 0.05s;
-            z-index: 10;
-        }
-
-        .stats-top {
-            text-align: center;
+        .main-stats {
             position: absolute;
-            top: 20px;
-            width: 100%;
+            top: 50px;
+            text-align: center;
         }
 
-        .points-main { font-size: 32px; font-weight: bold; margin-bottom: 0; }
-        .bps-sub { color: #94a3b8; margin-top: 5px; }
+        #points { font-size: 40px; margin: 0; font-weight: 900; }
+        #bps-text { font-size: 20px; color: rgba(255,255,255,0.8); margin: 5px 0; }
 
-        /* RIGHT SIDE - SHOP SIDEBAR */
-        .sidebar {
-            width: 380px;
-            background: var(--panel-bg);
-            backdrop-filter: blur(10px);
-            border-left: 2px solid rgba(255,255,255,0.1);
+        #character {
+            width: 320px;
+            cursor: pointer;
+            transition: transform 0.05s;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+        }
+
+        /* RIGHT SIDE - THE SHOP */
+        .shop-side {
+            width: 400px;
+            background: var(--panel);
+            margin: 15px;
+            border-radius: 25px;
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #334155;
         }
 
         .shop-header {
-            text-align: center;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            padding: 20px;
+            text-align: right;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
         }
 
-        .shop-item {
-            background: rgba(0,0,0,0.4);
-            margin-bottom: 10px;
+        .shop-header h2 { margin: 0; font-size: 32px; color: #1e293b; }
+        .click-power { font-size: 24px; color: var(--blue); font-weight: 900; }
+
+        .item-list {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 18px;
+            margin-bottom: 12px;
             padding: 12px;
-            border-radius: 12px;
             display: flex;
             align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             cursor: pointer;
+            border: 3px solid transparent;
             transition: 0.2s;
-            border: 1px solid transparent;
         }
 
-        .shop-item:hover { border-color: var(--gold); transform: scale(1.02); }
-        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
+        .item-card:hover { border-color: #fbbf24; transform: translateX(-5px); }
 
-        .item-info { flex: 1; margin-left: 15px; }
-        .item-name { font-weight: bold; font-size: 14px; }
-        .item-cost { color: var(--gold); font-size: 12px; }
-        .item-count { font-size: 24px; font-weight: bold; opacity: 0.5; }
+        .icon-container {
+            width: 65px;
+            height: 65px;
+            background: #f1f5f9;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            border: 2px solid #e2e8f0;
+        }
 
-        /* ASCENSION PANEL */
-        .ascend-panel {
-            margin-top: auto;
-            background: rgba(0,0,0,0.6);
-            padding: 15px;
+        .item-info { flex: 1; padding: 0 15px; }
+        .item-title { font-weight: 900; font-size: 16px; color: #1e293b; }
+        .item-desc { font-size: 11px; color: #64748b; }
+        .item-cost { color: #854d0e; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 4px; }
+
+        .item-count { font-size: 28px; font-weight: 900; color: var(--blue); opacity: 0.6; }
+
+        /* ASCEND BAR */
+        .bottom-bar {
+            background: #1e293b;
+            padding: 15px 20px;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .asc-info { color: white; line-height: 1.2; }
+        .asc-btn {
+            background: var(--gold);
+            color: #854d0e;
+            border: 3px solid white;
             border-radius: 12px;
-            text-align: center;
-        }
-
-        .ascend-btn {
-            background: linear-gradient(45deg, #7c3aed, #db2777);
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
+            padding: 8px 20px;
+            font-weight: 900;
             cursor: pointer;
-            margin-top: 10px;
+            text-align: center;
+            box-shadow: 0 4px 0 #ca8a04;
         }
+        .asc-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        .floating-text {
+        .floating-txt {
             position: absolute;
-            font-weight: bold;
+            font-weight: 900;
+            color: #22c55e;
             pointer-events: none;
-            animation: floatText 1s ease-out forwards;
+            animation: float 0.8s forwards;
+            z-index: 100;
         }
-
-        @keyframes floatText {
-            to { transform: translateY(-100px); opacity: 0; }
-        }
+        @keyframes float { to { transform: translateY(-80px); opacity: 0; } }
     </style>
 </head>
 <body>
- 
 
-    <div class="clicker-area">
-        <div class="stats-top">
-            <div class="points-main" id="points">0</div>
-            <div class="bps-sub"><span id="bps">0</span> Brainrot Per Second</div>
+    <div class="game-side">
+        <div class="main-stats">
+            <h1 id="points">0</h1>
+            <p id="bps-text"><span id="bps">0</span> Brainrot Per Second</p>
         </div>
-        
+
         <img id="character" src="yourimage.png" alt="Tung Guy">
-        
-        <div style="margin-top: 20px; color: #94a3b8;">Click Power: +<span id="clickPowerText">1</span></div>
+
+        <div style="position: absolute; bottom: 20px; background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 20px; font-size: 14px;">
+            Tung Sahur Clicker ★★★★☆ 3.5
+        </div>
     </div>
 
-    <div class="sidebar">
+    <div class="shop-side">
         <div class="shop-header">
-            <h3>UPGRADES</h3>
+            <h2>Click Power</h2>
+            <div class="click-power">+<span id="click-val">1</span></div>
         </div>
 
-        <div id="shop-container">
+        <div class="item-list" id="shop">
             </div>
 
-        <div class="ascend-panel">
-            <div>Ascension Multiplier: <span id="ascMult">1.0</span>x</div>
-            <button class="ascend-btn" onclick="ascend()">Ascend<br><small id="ascGain">Next: +0.0x</small></button>
+        <div class="bottom-bar">
+            <div class="asc-info">
+                <small style="opacity: 0.7">Ascension Multiplier</small><br>
+                <strong><span id="mult">1.0</span>x</strong>
+            </div>
+            <button class="asc-btn" onclick="ascend()">
+                Ascend<br><small id="asc-gain">0.0x</small>
+            </button>
         </div>
     </div>
 
     <audio id="bgMusic" loop><source src="sahur.mp3"></audio>
 
 <script>
-let points = 0;
-let totalPointsEver = 0;
-let prestigeMultiplier = 1.0;
-let clickBase = 1;
+    let p = 0, totalP = 0, mult = 1, baseClick = 1;
+    const items = [
+        { id: 0, n: "The Clicker", c: 10, p: 2, t: "c", count: 0, i: "🗿" },
+        { id: 1, n: "Tung Sahur Earth", c: 100, p: 10, t: "a", count: 0, i: "🌍" },
+        { id: 2, n: "Tung Sahur Sun", c: 1000, p: 80, t: "a", count: 0, i: "☀️" },
+        { id: 3, n: "Tung Sahur Galaxy", c: 10000, p: 500, t: "a", count: 0, i: "🌌" }
+    ];
 
-const items = [
-    { id: 0, name: "The Clicker", cost: 10, power: 1, type: "click", count: 0, icon: "🖱️" },
-    { id: 1, name: "Tung Sahur Earth", cost: 100, power: 5, type: "auto", count: 0, icon: "🌍" },
-    { id: 2, name: "Tung Sahur Sun", cost: 1000, power: 50, type: "auto", count: 0, icon: "☀️" },
-    { id: 3, name: "Tung Sahur Galaxy", cost: 10000, power: 500, type: "auto", count: 0, icon: "🌌" }
-];
+    // Load
+    const s = JSON.parse(localStorage.getItem("sahur_save"));
+    if(s) { p = s.p; totalP = s.tp; mult = s.m; items.forEach((item, i) => { item.count = s.it[i].count; item.c = s.it[i].c; }); }
 
-// Sound Pool
-const sounds = Array(5).fill(0).map(() => new Audio("click.mp3"));
-let sIdx = 0;
+    const sounds = Array(5).fill(0).map(() => new Audio("click.mp3"));
+    let sI = 0;
 
-function updateUI() {
-    let bps = items.filter(i => i.type === "auto").reduce((sum, i) => sum + (i.count * i.power), 0);
-    let clickPower = (items.filter(i => i.type === "click").reduce((sum, i) => sum + (i.count * i.power), clickBase)) * prestigeMultiplier;
-    
-    document.getElementById("points").innerText = Math.floor(points).toLocaleString();
-    document.getElementById("bps").innerText = (bps * prestigeMultiplier).toLocaleString();
-    document.getElementById("clickPowerText").innerText = Math.floor(clickPower).toLocaleString();
-    document.getElementById("ascMult").innerText = prestigeMultiplier.toFixed(1);
-    
-    // Calculate potential prestige gain
-    let potential = Math.max(0, (Math.floor(Math.sqrt(totalPointsEver / 10000)) * 0.1));
-    document.getElementById("ascGain").innerText = "Next: +" + potential.toFixed(1) + "x";
+    function update() {
+        let bps = items.filter(i => i.t === "a").reduce((s, i) => s + (i.count * i.p), 0) * mult;
+        let cp = (items.filter(i => i.t === "c").reduce((s, i) => s + (i.count * i.p), baseClick)) * mult;
+        
+        document.getElementById("points").innerText = Math.floor(p).toLocaleString();
+        document.getElementById("bps").innerText = Math.floor(bps).toLocaleString();
+        document.getElementById("click-val").innerText = Math.floor(cp).toLocaleString();
+        document.getElementById("mult").innerText = mult.toFixed(1);
+        
+        let gain = Math.max(0, (Math.floor(Math.sqrt(totalP / 5000)) * 0.1));
+        document.getElementById("asc-gain").innerText = gain.toFixed(1) + "x";
 
-    renderShop();
-}
-
-function renderShop() {
-    const container = document.getElementById("shop-container");
-    container.innerHTML = "";
-    items.forEach(item => {
-        const div = document.createElement("div");
-        div.className = `shop-item ${points < item.cost ? 'disabled' : ''}`;
-        div.onclick = () => buyItem(item.id);
-        div.innerHTML = `
-            <div style="font-size: 30px">${item.icon}</div>
-            <div class="item-info">
-                <div class="item-name">${item.name}</div>
-                <div class="item-cost">💰 ${Math.floor(item.cost).toLocaleString()}</div>
-            </div>
-            <div class="item-count">${item.count}</div>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function buyItem(id) {
-    const item = items[id];
-    if (points >= item.cost) {
-        points -= item.cost;
-        item.count++;
-        item.cost *= 1.5;
-        updateUI();
-    }
-}
-
-document.getElementById("character").onclick = (e) => {
-    // Play Sound
-    sounds[sIdx].currentTime = 0;
-    sounds[sIdx].play();
-    sIdx = (sIdx + 1) % sounds.length;
-
-    let clickPower = (items.filter(i => i.type === "click").reduce((sum, i) => sum + (i.count * i.power), clickBase)) * prestigeMultiplier;
-    points += clickPower;
-    totalPointsEver += clickPower;
-
-    // Animation
-    const img = document.getElementById("character");
-    img.style.transform = "scale(0.95)";
-    setTimeout(() => img.style.transform = "scale(1)", 50);
-
-    // Floating text
-    const txt = document.createElement("div");
-    txt.className = "floating-text";
-    txt.innerText = "+" + Math.floor(clickPower);
-    txt.style.left = e.pageX + "px";
-    txt.style.top = e.pageY + "px";
-    document.body.appendChild(txt);
-    setTimeout(() => txt.remove(), 1000);
-
-    updateUI();
-};
-
-function ascend() {
-    let gain = Math.floor(Math.sqrt(totalPointsEver / 10000)) * 0.1;
-    if (gain <= 0) return alert("Earn more Brainrot to ascend!");
-    
-    if (confirm("Reset progress for " + gain.toFixed(1) + "x multiplier boost?")) {
-        prestigeMultiplier += gain;
-        points = 0;
-        totalPointsEver = 0;
-        items.forEach(i => {
-            i.count = 0;
-            i.cost = i.id === 0 ? 10 : i.id === 1 ? 100 : i.id === 2 ? 1000 : 10000;
+        const container = document.getElementById("shop");
+        container.innerHTML = "";
+        items.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.onclick = () => { if(p >= item.c) { p -= item.c; item.count++; item.c *= 1.6; update(); } };
+            card.innerHTML = `
+                <div class="icon-container">${item.i}</div>
+                <div class="item-info">
+                    <div class="item-title">${item.n}</div>
+                    <div class="item-desc">+${item.p} ${item.t === 'c' ? 'per click' : 'per sec'}</div>
+                    <div class="item-cost">🪙 ${Math.floor(item.c).toLocaleString()}</div>
+                </div>
+                <div class="item-count">${item.count}</div>
+            `;
+            container.appendChild(card);
         });
-        updateUI();
+        localStorage.setItem("sahur_save", JSON.stringify({p:p, tp:totalP, m:mult, it:items}));
     }
-}
 
-// Auto-click loop
-setInterval(() => {
-    let bps = items.filter(i => i.type === "auto").reduce((sum, i) => sum + (i.count * i.power), 0);
-    points += (bps * prestigeMultiplier) / 10;
-    totalPointsEver += (bps * prestigeMultiplier) / 10;
-    updateUI();
-}, 100);
+    document.getElementById("character").onclick = (e) => {
+        sounds[sI].currentTime = 0; sounds[sI].play(); sI = (sI + 1) % sounds.length;
+        let cp = (items.filter(i => i.t === "c").reduce((s, i) => s + (i.count * i.p), baseClick)) * mult;
+        p += cp; totalP += cp;
+        
+        const t = document.createElement("div");
+        t.className = "floating-txt";
+        t.innerText = "+" + Math.floor(cp);
+        t.style.left = e.pageX + "px"; t.style.top = e.pageY + "px";
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 800);
+        
+        document.getElementById("character").style.transform = "scale(0.95)";
+        setTimeout(() => document.getElementById("character").style.transform = "scale(1)", 50);
+        update();
+    };
 
-updateUI();
+    function ascend() {
+        let g = Math.floor(Math.sqrt(totalP / 5000)) * 0.1;
+        if(g <= 0) return;
+        mult += g; p = 0; totalP = 0;
+        items.forEach(i => { i.count = 0; i.c = i.id === 0 ? 10 : i.id === 1 ? 100 : i.id === 2 ? 1000 : 10000; });
+        update();
+    }
+
+    setInterval(() => { 
+        let bps = items.filter(i => i.t === "a").reduce((s, i) => s + (i.count * i.p), 0) * mult;
+        p += bps/10; totalP += bps/10; update(); 
+    }, 100);
+
+    update();
 </script>
 </body>
 </html>
